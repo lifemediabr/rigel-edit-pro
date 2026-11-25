@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block css %}
+.pagina{max-width:760px;margin:auto;padding:22px 16px 60px;display:grid;gap:16px}
+.pagina h2{font-size:21px;margin-bottom:4px}
+.ok{background:rgba(184,229,54,.12);border:1px solid rgba(184,229,54,.4);color:var(--lima);padding:10px 14px;border-radius:14px}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.duas{grid-template-columns:1fr}}
+{% endblock %}
+{% block corpo %}
+{% set ativo = 'config' %}{% include "_topo.html" %}
+<form class="pagina" method="post" action="/config" autocomplete="off" enctype="multipart/form-data">
+ {% if ok == 'cookies_invalidos' %}<div class="aviso">Esse arquivo não parece ser de cookies do YouTube (cookies.txt).</div>
+ {% elif ok %}<div class="ok">Configurações salvas.</div>{% endif %}
+ <div class="cartao">
+  <h2>Conversa com IA</h2>
+  <p class="mu" style="margin-top:0">Opcional. Cada pessoa usa a <b>própria</b> chave. A cobrança cai na conta do provedor de quem configurou, por mensagem. Os comandos rápidos do Rigel continuam grátis sem chave.</p>
+  <div class="duas">
+   <div><label class="rot">Provedor</label>
+    <select name="ia_provedor">{% for k,p in provedores.items() %}<option value="{{k}}" {{ 'selected' if cfg.ia_provedor == k }}>{{ p.nome }}</option>{% endfor %}</select></div>
+   <div><label class="rot">Modelo</label><input type="text" name="ia_modelo" value="{{ cfg.ia_modelo or '' }}" placeholder="padrão: {{ provedores['anthropic'].modelo }}"></div>
+  </div>
+  <label class="rot">Chave da API {% if cfg.tem_ia %}<span class="pilula lima">configurada</span>{% endif %}</label>
+  <input type="password" name="ia_chave" placeholder="{{ 'deixe em branco para manter' if cfg.tem_ia else 'cole a chave aqui' }}">
+  {% if cfg.tem_ia %}<label class="check"><input type="checkbox" name="apagar_ia_chave"> Apagar a chave salva</label>{% endif %}
+  <label class="rot">Endereço da API (só para OpenAI compatível, ex.: OpenRouter, Groq, servidor próprio)</label>
+  <input type="text" name="ia_base" value="{{ cfg.ia_base or '' }}" placeholder="https://api.openai.com/v1">
+ </div>
+
+ <div class="cartao">
+  <h2>Dublagem ElevenLabs</h2>
+  <p class="mu" style="margin-top:0">Opcional e paga na sua conta ElevenLabs. Antes de cada dublagem o Rigel mostra a estimativa de créditos e pede confirmação. A voz Piper é grátis e não precisa de nada aqui.</p>
+  <label class="rot">Chave da ElevenLabs {% if cfg.tem_eleven %}<span class="pilula lima">configurada</span>{% endif %}</label>
+  <input type="password" name="eleven_chave" placeholder="{{ 'deixe em branco para manter' if cfg.tem_eleven else 'cole a chave aqui' }}">
+  {% if cfg.tem_eleven %}<label class="check"><input type="checkbox" name="apagar_eleven_chave"> Apagar a chave salva</label>{% endif %}
+  <div class="duas">
+   <div><label class="rot">ID da voz (no site da ElevenLabs)</label><input type="text" name="eleven_voz" value="{{ cfg.eleven_voz or '' }}"></div>
+   <div><label class="rot">Modelo</label><select name="eleven_modelo">
+    <option value="eleven_multilingual_v2" {{ 'selected' if cfg.eleven_modelo != 'eleven_flash_v2_5' }}>Multilingual v2 (mais natural)</option>
+    <option value="eleven_flash_v2_5" {{ 'selected' if cfg.eleven_modelo == 'eleven_flash_v2_5' }}>Flash v2.5 (mais barato)</option></select></div>
+  </div>
+ </div>
+ <div class="cartao">
+  <h2>YouTube bloqueou? (cookies) {% if cfg.tem_cookies %}<span class="pilula lima">enviados</span>{% endif %}</h2>
+  <p class="mu" style="margin-top:0">O Rigel já tenta sozinho: gerador de PO Token e 6 caminhos diferentes do YouTube. Se mesmo assim aparecer “não é robô”, resolva uma vez:
+   no seu computador, com o YouTube logado, exporte os cookies com a extensão <b>Get cookies.txt LOCALLY</b> (Chrome) e envie o arquivo aqui.
+   Vale para a instalação toda. Use uma conta sua; o YouTube pode pedir para entrar de novo de tempos em tempos.</p>
+  <input type="file" name="yt_cookies" accept=".txt,text/plain" style="font-size:14px;color:var(--mu)">
+  {% if cfg.tem_cookies %}<label class="check"><input type="checkbox" name="apagar_cookies"> Apagar os cookies enviados</label>{% endif %}
+ </div>
+ <p class="mu" style="font-size:13px;margin:0">As chaves ficam só no servidor e nunca voltam para a tela.</p>
+ <div><button class="btn">Salvar</button></div>
+</form>
+{% endblock %}

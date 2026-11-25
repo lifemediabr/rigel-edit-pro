@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titulo %}{{ job.titulo }} · Rigel Edit Pro{% endblock %}
+{% block corpo %}
+<p><a href="/">← Trabalhos</a></p>
+<div class="cartao">
+ <h1>{{ job.titulo }}</h1>
+ <span class="pilula">{{ job.canal }}</span>
+ <span class="pilula {{ {'pronto':'lima','revisao':'amar','erro':'verm'}.get(job.etapa,'azul') }}" id="etq">{{ etapas[job.etapa] }}</span>
+ {% if job.midia %}<p class="mu mono" style="font-size:13px">{{ job.midia.largura }}×{{ job.midia.altura }} · {{ job.midia.fps }} fps · {{ job.midia.duracao|mmss }}{% if job.idioma_detectado %} · fala: {{ job.idioma_detectado }}{% endif %}</p>{% endif %}
+
+ {% if job.etapa in ('fila','baixando','analisando','renderizando') %}
+  <p class="mu">{% if job.etapa == 'analisando' %}Transcrevendo com o Whisper. Em CPU leva mais ou menos o tempo do vídeo.{% elif job.etapa == 'renderizando' %}Renderizando…{% else %}Trabalhando…{% endif %}</p>
+  <div class="barra"><i id="pb" style="width:{{ job.progresso or 3 }}%"></i></div>
+  <script>
+  setInterval(async()=>{const r=await fetch('/job/{{ job.id }}/estado');const d=await r.json();
+   if(!['fila','baixando','analisando','renderizando'].includes(d.etapa))location.reload();
+   document.getElementById('pb').style.width=Math.max(3,d.progresso||0)+'%'},3000);
+  </script>
+ {% endif %}
+
+ {% if job.etapa == 'erro' %}<div class="aviso" style="margin-top:14px">{{ job.erro }}</div>{% endif %}
+</div>
+
+{% if job.etapa == 'pronto' %}
+<div class="cartao">
+ <h2>Pronto</h2>
+ <p class="mu">{{ job.midia.duracao|mmss }} → {{ job.duracao_final|mmss }} · cor {{ job.look }} · saída {{ job.destino }}</p>
+ <video controls preload="metadata" src="/job/{{ job.id }}/arquivo/{{ job.saida }}"></video>
+ <p style="display:flex;gap:10px;flex-wrap:wrap">
+  <a class="btn" href="/job/{{ job.id }}/arquivo/{{ job.saida }}" download>Baixar MP4</a>
+  <a class="btn sec" href="/job/{{ job.id }}/arquivo/rigel_davinci.edl" download>Projeto DaVinci (EDL)</a>
+ </p>
+ <p class="mu" style="font-size:13px">No DaVinci: importe o vídeo original, depois File → Import → Timeline → este EDL. Os cortes aparecem na timeline para ajustar à mão.</p>
+</div>
+{% endif %}
+
+{% if job.etapa in ('revisao','pronto','erro') and job.cortes is defined %}
+<form class="cartao" method="post" action="/job/{{ job.id }}/aprovar">
+ <h2>Cortes {% if job.etapa == 'pronto' %}(refazer){% endif %}</h2>
+ <p class="mu">Marcado = sai do vídeo. Desmarque o que for falso positivo.</p>
+ {% for c in job.cortes %}
+  <label class="corte">
+   <input type="checkbox" name="corte" value="{{ c.id }}" {% if c.ativo %}checked{% endif %}>
+   {% if c.quadro %}<img src="/job/{{ job.id }}/arquivo/quadros/{{ c.quadro }}" loading="lazy" alt="">{% else %}<span></span>{% endif %}
+   <span><span class="mono">{{ c.t0|mmss }} – {{ c.t1|mmss }}</span>
+    <span class="pilula {{ {'chamada':'rosa','tela_final':'amar','manual':'azul'}.get(c.tipo,'') }}">{{ c.categoria or c.tipo|replace('_',' ') }}</span><br>
+    “{{ c.texto }}”</span>
+  </label>
+ {% else %}
+  <p class="mu">Nenhuma chamada encontrada.</p>
+ {% endfor %}
+
+ <label class="check"><input type="checkbox" name="usar_silencios" {% if job.get('usar_silencios', True) %}checked{% endif %}>
+  Tirar {{ job.silencios|length }} pausas longas ({{ '%.0f'|format(job.silencios|sum(attribute='t1') - job.silencios|sum(attribute='t0')) }} s no total)</label>
+
+ <label>Cortes extras (um por linha, início-fim, ex.: 02:15-02:31)</label>
+ <textarea name="manuais" placeholder="00:00-00:12"></textarea>
+
+ <div class="grade">
+  <div><label>Cor</label><select name="look">{% for v,n in [('docu','Docu-reality'),('neutro','Neutro broadcast'),('original','Original')] %}<option value="{{v}}" {% if job.look==v %}selected{% endif %}>{{n}}</option>{% endfor %}</select></div>
+  <div><label>Saída</label><select name="destino">{% for v,n in [('playout','Playout Órion'),('youtube','YouTube')] %}<option value="{{v}}" {% if job.destino==v %}selected{% endif %}>{{n}}</option>{% endfor %}</select></div>
+ </div>
+ <p><button class="btn">{% if job.etapa == 'pronto' %}Renderizar de novo{% else %}Aprovar e renderizar{% endif %}</button></p>
+
+ <details><summary>Transcrição</summary><p class="mu" style="font-size:13px">{{ job.texto }}</p></details>
+</form>
+{% endif %}
+
+<form method="post" action="/job/{{ job.id }}/apagar" onsubmit="return confirm('Apagar este trabalho e todos os arquivos?')">
+ <button class="btn perigo">Apagar trabalho</button>
+</form>
+{% endblock %}

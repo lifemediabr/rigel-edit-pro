@@ -1,0 +1,11 @@
+{$DOMINIO} {
+	request_body {
+		max_size 20GB
+	}
+	reverse_proxy rigel:8800 {
+		transport http {
+			read_timeout 2h
+			write_timeout 2h
+		}
+	}
+}

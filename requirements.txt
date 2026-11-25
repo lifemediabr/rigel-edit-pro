@@ -1,0 +1,10 @@
+fastapi==0.*
+uvicorn[standard]
+jinja2
+python-multipart
+itsdangerous
+faster-whisper
+yt-dlp[default]
+gdown
+argostranslate
+piper-tts

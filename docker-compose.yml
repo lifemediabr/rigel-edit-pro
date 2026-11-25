@@ -1,0 +1,25 @@
+services:
+  rigel:
+    build: .
+    restart: unless-stopped
+    # teto de 2 núcleos e prioridade baixa: o playout tem prioridade no servidor
+    cpus: "2"
+    cpu_shares: 256
+    env_file: .env
+    volumes:
+      - ./dados:/dados
+    expose:
+      - "8800"
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMINIO=${DOMINIO}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy:/data
+    depends_on:
+      - rigel

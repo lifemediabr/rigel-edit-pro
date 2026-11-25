@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block titulo %}{{ job.titulo }} · Rigel Edit Pro{% endblock %}
+{% block css %}
+html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+.etopo{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--fundo2);border-bottom:1px solid var(--ln);flex:none}
+.etopo .voltar{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--c2);font-size:18px}
+.etopo .marca img{height:18px}.etopo .marca b{font-size:16px}
+.etopo .tit{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38vw}
+.estado{display:flex;align-items:center;gap:8px}
+.mini{width:120px;height:6px;background:var(--c2);border-radius:99px;overflow:hidden}.mini i{display:block;height:100%;background:var(--lima);transition:width .6s}
+.ed{flex:1;display:grid;grid-template-columns:310px minmax(0,1fr) 360px;min-height:0}
+.painel{background:var(--c1);display:flex;flex-direction:column;min-height:0}
+.esq{border-right:1px solid var(--ln)}.dir{border-left:1px solid var(--ln)}
+.abas{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--ln);flex:none}
+.abas button{flex:1;background:transparent;border:0;padding:9px 6px;border-radius:12px;font-weight:700;font-size:13px;color:var(--mu);cursor:pointer}
+.abas button.on{background:var(--c3);color:var(--claro)}
+.rolagem{overflow:auto;flex:1;padding:12px}
+.centro{display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.visor{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 14px 8px;gap:10px}
+.seg{display:inline-flex;background:var(--c1);border:1px solid var(--ln);border-radius:999px;padding:3px;gap:3px;align-self:center}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px;color:var(--mu);cursor:pointer}
+.seg button.on{background:var(--claro);color:var(--bg)}
+.seg button:disabled{opacity:.35;cursor:default}
+.tela{flex:1;min-height:0;display:grid;place-items:center;background:#000;border-radius:18px;overflow:hidden;position:relative}
+.tela video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;background:#000}
+.tela .sobre{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--mu);padding:20px;background:rgba(5,6,12,.6)}
+.transp{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.play{width:44px;height:44px;border-radius:50%;border:0;background:var(--lima);color:#141a05;font-size:16px;cursor:pointer;flex:none}
+.tc{font:15px var(--mono)}
+.transp .mu{font-size:13px}
+.zoom{display:flex;align-items:center;gap:6px;color:var(--mu);font-size:12px;margin-left:auto}
+.zoom input{accent-color:var(--lima);width:110px}
+.tl{flex:none;background:var(--fundo2);border-top:1px solid var(--ln);overflow-x:auto;overflow-y:hidden;padding:0 0 6px}
+.tl-in{position:relative;min-width:100%;cursor:pointer;user-select:none}
+.regua{height:22px;position:relative;border-bottom:1px solid var(--ln)}
+.regua span{position:absolute;top:4px;font:11px var(--mono);color:var(--mu);transform:translateX(3px);white-space:nowrap}
+.regua span::before{content:"";position:absolute;left:-3px;top:-4px;height:22px;border-left:1px solid var(--ln)}
+.trilha{position:relative;height:40px;margin-top:6px}
+.trilha .nome{position:sticky;left:6px;z-index:3;font-size:10px;font-weight:700;color:var(--mu);background:rgba(10,12,21,.85);padding:1px 6px;border-radius:6px;display:inline-block;margin:3px 0 0 6px}
+.tv{background-size:100% 100%;background-repeat:no-repeat;border-radius:8px;height:46px;background-color:var(--c2)}
+.ta{background-size:100% 100%;background-repeat:no-repeat;border-radius:8px;height:36px;background-color:#141826;opacity:.85}
+.tcort{height:30px}
+.mk{position:absolute;top:0;bottom:0;border-radius:6px;min-width:4px;cursor:pointer}
+.mk.chamada{background:var(--rosa)}.mk.tela_final{background:var(--amar)}.mk.manual{background:var(--azul)}
+.mk.silencio{background:rgba(246,243,236,.22);top:9px;bottom:9px;cursor:default}
+.mk.off{background:transparent!important;border:1.5px dashed rgba(246,243,236,.45)}
+.mk.sel{outline:2px solid var(--claro);outline-offset:1px}
+.sombra{position:absolute;top:62px;bottom:0;background:rgba(5,6,12,.62);pointer-events:none;border-left:1.5px solid var(--rosa);border-right:1.5px solid var(--rosa)}
+.sombra.silencio{border:0;background:rgba(5,6,12,.4)}
+.cabeca{position:absolute;top:0;bottom:0;width:2px;background:var(--lima);pointer-events:none;z-index:4}
+.cabeca::before{content:"";position:absolute;top:0;left:-6px;border:7px solid transparent;border-top:9px solid var(--lima)}
+.item{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:10px;position:relative;align-items:center;padding:9px;border-radius:16px;background:var(--c2);margin-bottom:8px;cursor:pointer;border:1px solid transparent}
+.item.sel{border-color:var(--claro)}
+.item.off{opacity:.55}
+.item .n{position:absolute;left:14px;top:13px;font:700 11px var(--mono);background:rgba(5,6,12,.8);padding:1px 6px;border-radius:6px;z-index:1}
+.item img{width:76px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;display:block;background:var(--c3)}
+.item .t{font-size:13px;line-height:1.35}
+.item .t small{display:block;font:12px var(--mono);color:var(--mu);margin-bottom:3px}
+.item .t q{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chave{position:relative;width:42px;height:24px;flex:none}
+.chave input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;position:absolute;z-index:1}
+.chave i{position:absolute;inset:0;border-radius:99px;background:var(--c3);transition:.2s}
+.chave i::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--claro);top:3px;left:3px;transition:.2s}
+.chave input:checked+i{background:var(--rosa)}.chave input:checked+i::after{left:21px}
+.linha{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:16px;background:var(--c2);margin-bottom:10px;font-size:14px}
+.opcoes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.opcoes.duas{grid-template-columns:1fr 1fr}
+.op{border:1px solid var(--ln);border-radius:14px;padding:10px;background:var(--c2);cursor:pointer;text-align:left;font-size:13px}
+.op b{display:block;font-size:14px}.op span{color:var(--mu);font-size:12px}
+.op.on{border-color:var(--lima);box-shadow:inset 0 0 0 1px var(--lima)}
+.amostra{height:34px;border-radius:9px;margin-bottom:8px}
+.titulo-sec{font:700 13px var(--body);color:var(--mu);margin:4px 0 8px}
+.exp{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--c2);margin-bottom:10px}
+.exp .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 12px var(--mono);flex:none}
+.exp .tx{flex:1;font-size:13px}.exp .tx b{display:block;font-size:14px}
+.exp .btn{padding:8px 14px;min-height:36px;font-size:13px}
+.chat-topo{padding:10px 12px;border-bottom:1px solid var(--ln);display:flex;flex-direction:column;gap:8px;flex:none}
+.chat-topo .quem{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 200deg,var(--azul),var(--rosa),var(--lima),var(--azul));display:grid;place-items:center;font:700 15px var(--display);color:#fff;flex:none}
+.modo{display:flex;background:var(--c2);border-radius:999px;padding:3px;gap:3px}
+.modo button{flex:1;border:0;background:transparent;padding:7px 8px;border-radius:999px;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer}
+.modo button.on{background:var(--lima);color:#141a05}
+.modo button.on.paga{background:var(--amar);color:#2a1d00}
+.msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;white-space:pre-wrap;line-height:1.45}
+.msg.voce{align-self:flex-end;background:var(--azul);color:#fff;border-bottom-right-radius:5px}
+.msg.rigel{align-self:flex-start;background:var(--c2);border-bottom-left-radius:5px}
+.msg.ia{border:1px solid rgba(255,200,61,.35)}
+.msg .uso{display:block;font:11px var(--mono);color:var(--mu);margin-top:6px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:0 12px 8px;flex:none}
+.chips button{flex:none;border:1px solid var(--ln);background:var(--c2);border-radius:999px;padding:6px 11px;font-size:12px;color:var(--claro);cursor:pointer}
+.enviar{display:flex;gap:8px;padding:10px 12px 12px;border-top:1px solid var(--ln);flex:none}
+.enviar textarea{min-height:44px;max-height:120px;resize:none;border-radius:16px;font:15px var(--body)}
+.enviar .btn{width:44px;height:44px;padding:0;border-radius:50%;font-size:18px;flex:none;align-self:flex-end}
+.abas-cel{display:none}
+@media(max-width:1100px){.ed{grid-template-columns:280px minmax(0,1fr) 320px}}
+@media(max-width:900px){
+ body{overflow:auto;height:auto}
+ .ed{display:block}
+ .centro{position:sticky;top:0;z-index:5}
+ .visor{padding:8px}
+ .tela{aspect-ratio:16/9;flex:none}
+ .etopo .marca,.mini{display:none}.etopo .tit{max-width:50vw}
+ .zoom{display:none}
+ #bt-render{padding:8px 14px;min-height:36px;font-size:13px}
+ .etopo .tit{max-width:34vw}
+ .msgs{max-height:52vh}
+ .abas-cel{display:flex;gap:4px;padding:6px;background:var(--fundo2);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:6}
+ .abas-cel button{flex:1;border:0;background:transparent;padding:10px 4px;border-radius:12px;font-weight:700;font-size:13px;color:var(--mu)}
+ .abas-cel button.on{background:var(--c3);color:var(--claro)}
+ .painel{border:0;min-height:60vh}
+ .painel:not(.mostra){display:none}
+ .esq .abas{display:none}
+ .centro{position:static}
+}
+{% endblock %}
+{% block corpo %}
+<header class="etopo">
+ <a class="voltar" href="/" title="Voltar">←</a>
+ <a class="marca" href="/"><img src="/static/orion-logo.png" alt="Órion"><b>Rigel <span>Edit Pro</span></b></a>
+ <span class="tit">{{ job.titulo }}</span>
+ <span class="esp"></span>
+ <span class="estado"><span class="pilula" id="etapa">…</span><span class="mini"><i id="prog" style="width:0"></i></span></span>
+ <button class="btn" id="bt-render">Renderizar</button>
+</header>
+
+<div class="ed">
+ <aside class="painel esq" id="p-esq">
+  <div class="abas"><button data-aba="cortes" class="on">Cortes</button><button data-aba="ajustes">Ajustes</button><button data-aba="exportar">Exportar</button></div>
+  <div class="rolagem" id="aba-cortes"></div>
+  <div class="rolagem" id="aba-ajustes" hidden></div>
+  <div class="rolagem" id="aba-exportar" hidden></div>
+ </aside>
+
+ <section class="centro">
+  <div class="visor">
+   <div class="seg" id="fontes"><button data-f="original">Original</button><button data-f="previa" class="on">Prévia com cortes</button><button data-f="final">Final</button></div>
+   <div class="tela"><video id="v" playsinline preload="metadata"></video><div class="sobre" id="sobre" hidden></div></div>
+   <div class="transp">
+    <button class="play" id="play" aria-label="Tocar">▶</button>
+    <span class="tc" id="tc">00:00.0</span>
+    <span class="mu" id="durs"></span>
+    <label class="zoom">Zoom <input type="range" id="zoom" min="1" max="12" step="0.5" value="1"></label>
+   </div>
+  </div>
+  <div class="tl" id="tl"><div class="tl-in" id="tlin">
+   <div class="regua" id="regua"></div>
+   <div class="trilha tcort" id="tr-cortes"><span class="nome">Cortes</span></div>
+   <div class="trilha"><div class="tv" id="tr-v"><span class="nome">Vídeo</span></div></div>
+   <div class="trilha"><div class="ta" id="tr-a"><span class="nome">Áudio</span></div></div>
+   <div id="sombras"></div>
+   <div class="cabeca" id="cab"></div>
+  </div></div>
+ </section>
+
+ <nav class="abas-cel" id="abas-cel"><button data-p="rigel" class="on">Rigel</button><button data-p="cortes">Cortes</button><button data-p="ajustes">Ajustes</button><button data-p="exportar">Exportar</button></nav>
+
+ <aside class="painel dir mostra" id="p-rigel">
+  <div class="chat-topo">
+   <div class="quem"><span class="avatar">R</span><div><b>Rigel</b><br><span class="mu" style="font-size:12px" id="modo-legenda">Comandos rápidos · grátis</span></div></div>
+   <div class="modo"><button data-m="rapido" class="on">Comandos · grátis</button><button data-m="ia" class="paga">Conversa com IA · paga</button></div>
+   <div class="aviso" id="aviso-ia" hidden style="font-size:12px"></div>
+  </div>
+  <div class="msgs" id="msgs"></div>
+  <div class="chips" id="chips"></div>
+  <form class="enviar" id="form-msg"><textarea id="txt" rows="1" placeholder="Ex.: corta de 02:10 a 02:30"></textarea><button class="btn" aria-label="Enviar">↑</button></form>
+ </aside>
+</div>
+
+<script>
+window.RIGEL={id:"{{ job.id }}",temIA:{{ 'true' if tem_ia else 'false' }},iaNome:"{{ ia_nome }}"};
+</script>
+<script src="/static/editor.js?v=4"></script>
+{% endblock %}
