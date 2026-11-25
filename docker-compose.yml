@@ -10,7 +10,12 @@ services:
       - ./dados:/dados
     expose:
       - "8800"
+    # so para o nginx do Orion Full (mesma maquina); nao abre para a internet
+    ports:
+      - "127.0.0.1:8800:8800"
   caddy:
+    # liga so com COMPOSE_PROFILES=caddy no .env (servidor sem nginx)
+    profiles: ["caddy"]
     image: caddy:2
     restart: unless-stopped
     ports:

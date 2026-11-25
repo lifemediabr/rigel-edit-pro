@@ -29,6 +29,8 @@ RIGEL_SEGREDO=$(openssl rand -hex 32)
 WHISPER_MODELO=small
 RIGEL_HTTPS=1
 FIM
+  # sem nginx na maquina: o Caddy cuida do HTTPS
+  command -v nginx >/dev/null || echo "COMPOSE_PROFILES=caddy" >> .env
   chmod 600 .env
 fi
 echo "== Montando (leva de 5 a 15 minutos na primeira vez) =="
