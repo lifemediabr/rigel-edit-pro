@@ -4,6 +4,8 @@ jinja2
 python-multipart
 itsdangerous
 faster-whisper
+# PyAV 15+ tirou o metadata_errors que o faster-whisper usa
+av<15
 yt-dlp[default]
 gdown
 argostranslate
