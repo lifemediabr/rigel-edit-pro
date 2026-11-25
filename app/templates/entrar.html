@@ -9,9 +9,9 @@ background:radial-gradient(circle at 80% 10%,rgba(47,140,255,.22),transparent 40
  <div class="marca" style="margin-bottom:22px"><img src="/static/orion-logo.png" alt="Órion"><b>Rigel <span>Edit Pro</span></b></div>
  <h1 style="font-size:26px;margin-bottom:6px">Entrar</h1>
  <p class="mu" style="margin-top:0">Editor da Constelação Órion.</p>
- {% if erro %}<div class="aviso">Usuário ou senha incorretos.</div>{% endif %}
+ {% if erro %}<div class="aviso">Usuário ou senha incorretos (ou esta conta do Órion não tem acesso ao Rigel).</div>{% endif %}
  <form method="post" action="/entrar">
-  {% if multi %}<label class="rot">Usuário</label><input type="text" name="nome" autocomplete="username" required>{% endif %}
+  <label class="rot">E-mail do Órion ou usuário do Rigel</label><input type="text" name="nome" autocomplete="username" required>
   <label class="rot">Senha</label><input type="password" name="senha" autocomplete="current-password" required>
   <p><button class="btn" style="width:100%">Entrar</button></p>
  </form>

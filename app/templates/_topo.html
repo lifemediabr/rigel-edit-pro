@@ -6,6 +6,6 @@
   <a href="/config" class="{{ 'on' if ativo == 'config' }}">Configurações</a>
  </nav>
  <span class="esp"></span>
- <span class="pilula usr">{{ usuario }}</span>
+ <span class="pilula usr">{{ (usuario or '')|replace('orion:','') }}</span>
  <a class="pilula" href="/sair">Sair</a>
 </header>

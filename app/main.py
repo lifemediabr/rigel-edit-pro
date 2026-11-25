@@ -254,12 +254,43 @@ def criar_job_de_item(it, arquivo, titulo=None):
 
 
 # ---------------------------------------------------------------- login
+# Login com a conta do Órion (orionplayout.live): admin geral ou e-mails em RIGEL_ORION_EMAILS
+ORION_URL = os.environ.get("RIGEL_ORION_URL", "https://orionplayout.live").rstrip("/")
+ORION_EMAILS = {e.strip().lower() for e in os.environ.get("RIGEL_ORION_EMAILS", "").split(",") if e.strip()}
+
+
+def login_orion(email, senha):
+    """Confere e-mail e senha no Órion. Devolve o e-mail se puder entrar no Rigel, senão None."""
+    import urllib.request, urllib.error
+    try:
+        req = urllib.request.Request(ORION_URL + "/enviar/login", method="POST",
+                                     data=json.dumps({"email": email, "senha": senha}).encode(),
+                                     headers={"Content-Type": "application/json", "User-Agent": "Rigel Edit Pro"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            us = json.loads(r.read().decode() or "{}")
+            ck = (r.headers.get("Set-Cookie") or "").split(";")[0]
+        if ck:  # fecha a sessão aberta no Órion; o Rigel tem a dele
+            try:
+                urllib.request.urlopen(urllib.request.Request(ORION_URL + "/enviar/logout", method="POST", data=b"{}",
+                                       headers={"Cookie": ck, "Content-Type": "application/json"}), timeout=10)
+            except Exception:
+                pass
+    except (urllib.error.URLError, ValueError, OSError):
+        return None
+    em = (us.get("email") or "").lower()
+    if em and (us.get("geral") or us.get("papel") == "admin" or em in ORION_EMAILS):
+        return em
+    return None
+
+
 def usuario(req: Request):
     try:
         n = assinador.loads(req.cookies.get("rigel", ""))
-        return n if n in USUARIOS else None
     except BadSignature:
         return None
+    if n in USUARIOS or (isinstance(n, str) and n.startswith("orion:")):
+        return n
+    return None
 
 
 @app.middleware("http")
@@ -279,14 +310,18 @@ def saude():
 
 @app.get("/entrar", response_class=HTMLResponse)
 def entrar_form(req: Request, erro: str = ""):
-    return tpl.TemplateResponse(req, "entrar.html", {"erro": erro, "multi": len(USUARIOS) > 1 or "admin" not in USUARIOS})
+    return tpl.TemplateResponse(req, "entrar.html", {"erro": erro, "multi": True})
 
 
 @app.post("/entrar")
 def entrar(nome: str = Form("admin"), senha: str = Form(...)):
     time.sleep(0.5)
     nome = (nome or "admin").strip().lower()
-    if nome not in USUARIOS or not secrets.compare_digest(senha, USUARIOS[nome]):
+    if nome in USUARIOS and secrets.compare_digest(senha, USUARIOS[nome]):
+        pass
+    elif "@" in nome and (em := login_orion(nome, senha)):
+        nome = "orion:" + em
+    else:
         return RedirectResponse("/entrar?erro=1", 303)
     r = RedirectResponse("/", 303)
     r.set_cookie("rigel", assinador.dumps(nome), httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30,
