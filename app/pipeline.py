@@ -66,6 +66,9 @@ def baixar(link, pasta: Path, idioma=""):
                  "--convert-subs", "srt"]
     # Mesma estratégia do Órion Lite: gerador de PO Token (127.0.0.1:4416, entra sozinho) + vários clientes do
     # YouTube; os cookies da conta (Configurações) entram por último, porque misturar com o PO Token às vezes atrapalha.
+    # IPv6 do servidor (o YouTube costuma barrar o IPv4 de data center); ligado pelo consertar-youtube.sh
+    if os.environ.get("RIGEL_YT_IPV6") == "1":
+        base += ["-6"]
     tentativas = [(c, False) for c in CLIENTES_YT]
     if COOKIES_YT.exists():
         tentativas += [("default", True), ("tv,web_safari", True), ("mweb", True)]
